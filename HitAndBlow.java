@@ -7,87 +7,113 @@ import java.util.Scanner;
 public class HitAndBlow {
     public static final Random RANDOM = new Random();
     public static final Scanner STDIN = new Scanner(System.in);
-    
+
     public static final boolean IS_TEST = true;
-    public static final int NUM_OF_DIGITS = 5;
-    public static final int NUM_OF_CHALLENGE_LIMIT = 5;
+    public static final int NUM_OF_DIGIT = 4;
+    public static final int NUM_OF_CHALLENGE_LIMIT = 7;
+    public static final int NUM_OF_HINT_TIME = 3;
     public static final int ONE_LINE = 1;
     public static final String MESSAGE_FOR_SUGGEST_INPUT_INT = "数値で入力してください：";
     public static final String MESSAGE_FOR_INPUT_INT = "%d桁の数字を入力してください：";
     public static final String MESSAGE_FOR_CLEAR = "おめでとう！%d回目で成功♪%n";
     public static final String MESSAGE_FOR_HIT_AND_BLOW_NUM = "ヒット：%d個、ブロー：%d個%n";
-    public static final String MESSAGE_FOR_FAILURE = "残念！正解は%dだよ%n";
+    public static final String MESSAGE_FOR_FAILURE = "残念！正解は";
+    public static final String MESSAGE_FOR_HINT = "ヒント：%d%n";
 
     public static void main(String[] args) {
         List<Integer> elementNum = new ArrayList<Integer>(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9));
-        int[] dealerNums = new int[NUM_OF_DIGITS];
-        
+        int[] dealerNums = new int[NUM_OF_DIGIT];
+
         generateNum(dealerNums, elementNum);
         testShowNum(dealerNums, IS_TEST);
-        
+
         showBlankLine(ONE_LINE);
-        
+
         playHitAndBlow(dealerNums);
 
     }
 
     private static void playHitAndBlow(int[] dealerNums) {
         int challengeTime = 0;
-        int hitNum=0;
-        int blowNum=0;
-        int[] playerNums = new int[NUM_OF_DIGITS];
-        while (!isOverLimitNum(++challengeTime)&&!isClear(hitNum)) {
+        int hitNum = 0;
+        int blowNum = 0;
+        int[] playerNums = new int[NUM_OF_DIGIT];
+
+        while (!isOverLimitNum(++challengeTime) && !isClear(hitNum)) {
             showInputDigitNumMessage();
 
             changeIntToArray(playerNums, receiveValidatedNum());
 
             hitNum = validateHit(dealerNums, playerNums);
 
-            blowNum = validateBlow(dealerNums, playerNums,hitNum);
+            blowNum = validateBlow(dealerNums, playerNums, hitNum);
 
-            showResult(hitNum,blowNum,challengeTime);
+            showResult(hitNum, blowNum, challengeTime);
+
+            if (!isClear(hitNum))
+                showHint(challengeTime, dealerNums);
         }
-        if(!isClear(hitNum))showLoseMessage(dealerNums);
+        if (!isClear(hitNum))
+            showLoseMessage(dealerNums);
+    }
+
+    private static void showHint(int challengeTime, int[] dealerNums) {
+        if (isShowHintTime(challengeTime))
+            if (!isOverDigitNum(challengeTime / NUM_OF_HINT_TIME))
+                showHintMessage(dealerNums[challengeTime / NUM_OF_HINT_TIME-1]);
+    }
+
+    private static void showHintMessage(int hintNum) {
+        System.out.format(MESSAGE_FOR_HINT, hintNum);
+    }
+
+    private static boolean isOverDigitNum(int num) {
+        return num > NUM_OF_DIGIT;
+    }
+
+    private static boolean isShowHintTime(int challengeTime) {
+        return challengeTime % NUM_OF_HINT_TIME == 0;
     }
 
     private static void showLoseMessage(int[] dealerNums) {
-        System.out.format(MESSAGE_FOR_FAILURE,showArray(dealerNums));;
+        show(MESSAGE_FOR_FAILURE);
+        showArray(dealerNums);
     }
 
     private static void showResult(int hitNum, int blowNum, int challengeTime) {
-        if(isClear(hitNum)){
+        if (isClear(hitNum)) {
             showClearMessage(challengeTime);
-        }else{
-            showHitAndBlowNums(hitNum,blowNum);
+        } else {
+            showHitAndBlowNums(hitNum, blowNum);
         }
     }
 
     private static void showClearMessage(int challengeTime) {
-        System.out.format(MESSAGE_FOR_CLEAR,challengeTime);
+        System.out.format(MESSAGE_FOR_CLEAR, challengeTime);
     }
 
     private static boolean isClear(int hitNum) {
-        return hitNum==NUM_OF_DIGITS;
+        return hitNum == NUM_OF_DIGIT;
     }
 
     private static void showHitAndBlowNums(int hitNum, int blowNum) {
-        System.out.format(MESSAGE_FOR_HIT_AND_BLOW_NUM,hitNum,blowNum);
+        System.out.format(MESSAGE_FOR_HIT_AND_BLOW_NUM, hitNum, blowNum);
     }
 
     private static int validateBlow(int[] dealerNums, int[] playerNums, int hitNum) {
         int tempNum = 0;
-        for (int i = 0; i < NUM_OF_DIGITS; i++) {
-            for (int j = 0; j < NUM_OF_DIGITS; j++) {
+        for (int i = 0; i < NUM_OF_DIGIT; i++) {
+            for (int j = 0; j < NUM_OF_DIGIT; j++) {
                 if (isEqualNums(dealerNums[i], playerNums[j]))
-                tempNum++;
+                    tempNum++;
             }
         }
-        return tempNum-hitNum;
+        return tempNum - hitNum;
     }
 
     private static int validateHit(int[] dealerNums, int[] playerNums) {
         int hitNum = 0;
-        for (int i = 0; i < NUM_OF_DIGITS; i++) {
+        for (int i = 0; i < NUM_OF_DIGIT; i++) {
             if (isEqualNums(dealerNums[i], playerNums[i]))
                 hitNum++;
         }
@@ -103,7 +129,7 @@ public class HitAndBlow {
     }
 
     private static void showInputDigitNumMessage() {
-        System.out.format(MESSAGE_FOR_INPUT_INT, NUM_OF_DIGITS);
+        System.out.format(MESSAGE_FOR_INPUT_INT, NUM_OF_DIGIT);
     }
 
     private static void showBlankLine(int lines) {
@@ -130,14 +156,14 @@ public class HitAndBlow {
     }
 
     private static void changeIntToArray(int[] playerNums, int inputInt) {
-        for (int i = NUM_OF_DIGITS - 1; i >= 0; i--) {
+        for (int i = NUM_OF_DIGIT - 1; i >= 0; i--) {
             playerNums[i] = inputInt % 10;
             inputInt /= 10;
         }
     }
 
     private static boolean isEqualNumOfDigits(String str) {
-        return getLength(str) == NUM_OF_DIGITS;
+        return getLength(str) == NUM_OF_DIGIT;
     }
 
     private static int getLength(String inputStr) {
@@ -181,7 +207,7 @@ public class HitAndBlow {
     }
 
     private static void generateNum(int[] nums, List<Integer> elementNum) {
-        for (int i = 0; i < NUM_OF_DIGITS; i++) {
+        for (int i = 0; i < NUM_OF_DIGIT; i++) {
             fetchRandomNum(i, nums, elementNum);
         }
     }
